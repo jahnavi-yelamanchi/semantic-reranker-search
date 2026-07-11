@@ -64,6 +64,16 @@ npm install
 npm run dev
 ```
 
+Shortcut commands:
+
+```bash
+make api
+make frontend
+make test
+make data
+make benchmark
+```
+
 By default, the API starts with example documents so the UI can search immediately. Before Modal artifacts exist, `finetuned` mode falls back to deterministic semantic search and returns an artifact status message.
 
 ## Generate Data
@@ -176,4 +186,3 @@ Render health check endpoint.
 ## Current Scope
 
 This is a one-day MVP. It intentionally skips authentication, payments, teams, persistent multi-user storage, and complex ingestion pipelines.
-
