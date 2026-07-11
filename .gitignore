@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+frontend/dist/
+backend/frontend_dist/
+artifacts/model/
+artifacts/onnx_export/
+artifacts/*.onnx
+data/*.jsonl
+.env
+
