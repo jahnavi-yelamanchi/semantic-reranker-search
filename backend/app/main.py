@@ -84,6 +84,6 @@ def to_result(rank: int, result: RankedChunk, mode: RankingMode) -> SearchResult
     )
 
 
-static_dir = Path(__file__).resolve().parents[2] / "frontend_dist"
+static_dir = Path(__file__).resolve().parents[1] / "frontend_dist"
 if static_dir.exists():
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="frontend")
