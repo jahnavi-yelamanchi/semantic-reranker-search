@@ -7,7 +7,7 @@ from .chunking import Chunk, tokenize
 from .retrieval import BM25Retriever, EmbeddingRetriever, RankedChunk
 
 
-class OnnxInt8Reranker:
+class TrainedInt8Reranker:
     def __init__(
         self,
         artifact_path: str = "artifacts/model-int8.onnx",

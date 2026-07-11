@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .metrics import load_benchmark_rows
 from .retrieval import BM25Retriever, EmbeddingRetriever, RankedChunk
-from .reranker import OnnxInt8Reranker
+from .reranker import TrainedInt8Reranker
 from .schemas import ArtifactStatus, BenchmarkRow, DocumentIn, DocumentOut, RankingMode, SearchIn, SearchOut, SearchResult
 from .store import SearchStore
 
@@ -24,7 +24,7 @@ app.add_middleware(
 store = SearchStore()
 store.reset_with_examples()
 embedding_retriever = EmbeddingRetriever()
-onnx_reranker = OnnxInt8Reranker()
+trained_reranker = TrainedInt8Reranker()
 
 
 @app.get("/health")
@@ -56,8 +56,8 @@ def search(payload: SearchIn) -> SearchOut:
         results = embedding_retriever.search(payload.query, store.chunks, payload.top_k)
         status = embedding_retriever.status
     else:
-        results = onnx_reranker.search(payload.query, store.chunks, payload.top_k)
-        status = onnx_reranker.status
+        results = trained_reranker.search(payload.query, store.chunks, payload.top_k)
+        status = trained_reranker.status
 
     return SearchOut(
         query=payload.query,
@@ -75,8 +75,8 @@ def metrics() -> list[BenchmarkRow]:
 @app.get("/artifacts", response_model=list[ArtifactStatus])
 def artifacts() -> list[ArtifactStatus]:
     return [
-        artifact_status("lightweight-int8", onnx_reranker.lightweight_path),
-        artifact_status("onnx-int8", onnx_reranker.artifact_path),
+        artifact_status("lightweight-int8", trained_reranker.lightweight_path),
+        artifact_status("onnx-int8", trained_reranker.artifact_path),
     ]
 
 
