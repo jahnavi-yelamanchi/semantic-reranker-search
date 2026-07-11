@@ -27,15 +27,18 @@ function App() {
   const [topK, setTopK] = useState(5);
   const [results, setResults] = useState([]);
   const [metrics, setMetrics] = useState([]);
+  const [artifacts, setArtifacts] = useState([]);
   const [status, setStatus] = useState("Ready");
   const [artifactStatus, setArtifactStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE}/metrics`).then((res) => res.json()).then(setMetrics).catch(() => setMetrics([]));
+    fetch(`${API_BASE}/artifacts`).then((res) => res.json()).then(setArtifacts).catch(() => setArtifacts([]));
   }, []);
 
   const selectedMode = useMemo(() => MODES.find((item) => item.id === mode), [mode]);
+  const readyArtifacts = useMemo(() => artifacts.filter((item) => item.present), [artifacts]);
 
   async function ingestDocument(event) {
     event.preventDefault();
@@ -104,6 +107,10 @@ function App() {
         <div className="side-stat">
           <BarChart3 size={18} />
           <span>{metrics.length || 3} benchmark rows</span>
+        </div>
+        <div className="side-stat">
+          <Gauge size={18} />
+          <span>{readyArtifacts.length || 0} model artifact{readyArtifacts.length === 1 ? "" : "s"} ready</span>
         </div>
       </aside>
 
