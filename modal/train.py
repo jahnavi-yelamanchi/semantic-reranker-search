@@ -39,7 +39,7 @@ def train_and_export(max_examples: int = 1000, epochs: int = 1) -> dict[str, str
         train_examples.append(InputExample(texts=[row["query"], row["positive"], row["negative"]]))
 
     dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
-    loss = losses.MultipleNegativesRankingLoss(model)
+    loss = losses.TripletLoss(model)
     model.fit(train_objectives=[(dataloader, loss)], epochs=epochs, warmup_steps=20, show_progress_bar=True)
 
     output_dir = Path("/artifacts/model")
@@ -112,4 +112,3 @@ def export_onnx(model_dir: Path, onnx_path: Path, int8_path: Path) -> None:
     exported = export_dir / "model.onnx"
     exported.replace(onnx_path)
     quantize_dynamic(str(onnx_path), str(int8_path), weight_type=QuantType.QInt8)
-
