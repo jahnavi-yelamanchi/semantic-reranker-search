@@ -64,6 +64,8 @@ npm install
 npm run dev
 ```
 
+If the frontend is running separately from the API, set `VITE_API_BASE=http://localhost:8000` in `frontend/.env.local`.
+
 Shortcut commands:
 
 ```bash
