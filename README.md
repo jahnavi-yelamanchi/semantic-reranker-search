@@ -122,11 +122,11 @@ The benchmark script writes rows consumed by both the API and UI:
 
 | Model | Recall@5 | P95 latency | Size |
 | --- | ---: | ---: | ---: |
-| BM25 | measured locally | measured locally | - |
-| Base embedding model | measured locally | measured locally | model dependent |
-| Fine-tuned ONNX INT8 | measured locally | measured locally | artifact dependent |
+| BM25 | 0.200 | 0.51 ms | - |
+| Base embedding model | 0.210 | 4.06 ms | - |
+| Fine-tuned ONNX INT8 fallback | 0.210 | 4.04 ms | artifact pending |
 
-Replace this table with measured values after the first Modal training run.
+These are baseline numbers from `artifacts/metrics.json`. Replace the fallback row after the first Modal training run downloads `artifacts/model-int8.onnx`.
 
 ## Test
 
