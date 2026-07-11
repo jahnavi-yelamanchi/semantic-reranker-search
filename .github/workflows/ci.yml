@@ -23,6 +23,9 @@ jobs:
       - name: Run tests
         run: pytest
 
+      - name: Run API smoke test
+        run: make smoke
+
   frontend-build:
     runs-on: ubuntu-latest
     steps:
