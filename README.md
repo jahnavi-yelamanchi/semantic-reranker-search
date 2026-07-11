@@ -72,6 +72,8 @@ make frontend
 make test
 make data
 make benchmark
+make modal-train
+make modal-download
 ```
 
 By default, the API starts with example documents so the UI can search immediately. Before Modal artifacts exist, `finetuned` mode falls back to deterministic semantic search and returns an artifact status message.
@@ -91,7 +93,7 @@ Training is intentionally remote-only.
 ```bash
 pip install modal
 modal setup
-modal run modal/train.py --max-examples 1000 --epochs 1
+make modal-train
 ```
 
 The Modal job:
@@ -102,7 +104,11 @@ The Modal job:
 4. exports ONNX,
 5. writes `model-int8.onnx` with dynamic INT8 quantization.
 
-Download artifacts from the Modal Volume into `artifacts/` before benchmarking or deployment.
+Download artifacts from the Modal Volume into `artifacts/` before benchmarking or deployment:
+
+```bash
+make modal-download
+```
 
 Expected artifact paths:
 
