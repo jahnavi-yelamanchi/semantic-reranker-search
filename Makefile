@@ -1,4 +1,4 @@
-.PHONY: api frontend test data benchmark docker-build
+.PHONY: api frontend test smoke data benchmark docker-build
 
 api:
 	uvicorn app.main:app --app-dir backend --reload
@@ -8,6 +8,9 @@ frontend:
 
 test:
 	pytest
+
+smoke:
+	python scripts/smoke_api.py
 
 data:
 	python scripts/generate_dataset.py --count 1000 --out data/training_pairs.jsonl
