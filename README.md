@@ -197,6 +197,10 @@ Modes: `bm25`, `base`, `finetuned`.
 
 Returns benchmark rows for the UI and README table.
 
+### `GET /artifacts`
+
+Returns model artifact availability and sizes for the lightweight INT8 and optional ONNX INT8 artifacts.
+
 ### `GET /health`
 
 Render health check endpoint.

@@ -51,3 +51,9 @@ class BenchmarkRow(BaseModel):
     p95_latency_ms: float
     size_mb: float | None = None
 
+
+class ArtifactStatus(BaseModel):
+    name: str
+    path: str
+    present: bool
+    size_mb: float | None = None

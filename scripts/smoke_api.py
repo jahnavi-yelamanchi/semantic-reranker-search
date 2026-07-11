@@ -39,6 +39,11 @@ def main() -> None:
     if not metrics.json():
         raise SystemExit("metrics returned no rows")
 
+    artifacts = client.get("/artifacts")
+    artifacts.raise_for_status()
+    if not any(row["present"] for row in artifacts.json()):
+        raise SystemExit("no model artifacts are present")
+
     print("smoke ok")
 
 

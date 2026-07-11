@@ -31,3 +31,10 @@ def test_metrics_shape():
     assert response.status_code == 200
     assert {"model", "recall_at_5", "p95_latency_ms", "size_mb"} <= set(response.json()[0])
 
+
+def test_artifacts_shape():
+    response = client.get("/artifacts")
+    assert response.status_code == 200
+    payload = response.json()
+    assert {row["name"] for row in payload} == {"lightweight-int8", "onnx-int8"}
+    assert {"name", "path", "present", "size_mb"} <= set(payload[0])

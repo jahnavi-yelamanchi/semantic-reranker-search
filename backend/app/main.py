@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from .metrics import load_benchmark_rows
 from .retrieval import BM25Retriever, EmbeddingRetriever, RankedChunk
 from .reranker import OnnxInt8Reranker
-from .schemas import BenchmarkRow, DocumentIn, DocumentOut, RankingMode, SearchIn, SearchOut, SearchResult
+from .schemas import ArtifactStatus, BenchmarkRow, DocumentIn, DocumentOut, RankingMode, SearchIn, SearchOut, SearchResult
 from .store import SearchStore
 
 app = FastAPI(title="Semantic Reranker Search", version="0.1.0")
@@ -70,6 +70,26 @@ def search(payload: SearchIn) -> SearchOut:
 @app.get("/metrics", response_model=list[BenchmarkRow])
 def metrics() -> list[BenchmarkRow]:
     return load_benchmark_rows()
+
+
+@app.get("/artifacts", response_model=list[ArtifactStatus])
+def artifacts() -> list[ArtifactStatus]:
+    return [
+        artifact_status("lightweight-int8", onnx_reranker.lightweight_path),
+        artifact_status("onnx-int8", onnx_reranker.artifact_path),
+    ]
+
+
+def artifact_status(name: str, path: Path) -> ArtifactStatus:
+    if not path.exists():
+        return ArtifactStatus(name=name, path=str(path), present=False, size_mb=None)
+    size = path.stat().st_size / (1024 * 1024)
+    return ArtifactStatus(
+        name=name,
+        path=str(path),
+        present=True,
+        size_mb=round(size, 4) if size < 1 else round(size, 2),
+    )
 
 
 def to_result(rank: int, result: RankedChunk, mode: RankingMode) -> SearchResult:
