@@ -26,7 +26,6 @@ volume = modal.Volume.from_name("semantic-reranker-artifacts", create_if_missing
 def train_and_export(max_examples: int = 1000, epochs: int = 1) -> dict[str, str]:
     from datasets import Dataset
     from sentence_transformers import SentenceTransformer, losses
-    from sentence_transformers.evaluation import InformationRetrievalEvaluator
     from torch.utils.data import DataLoader
 
     rows = build_synthetic_pairs(max_examples)
@@ -90,6 +89,8 @@ def build_synthetic_pairs(count: int) -> list[dict[str, str]]:
 
 
 def evaluate_model(model, rows: list[dict[str, str]]) -> dict[str, float]:
+    from sentence_transformers.evaluation import InformationRetrievalEvaluator
+
     queries = {str(index): row["query"] for index, row in enumerate(rows)}
     corpus = {str(index): row["positive"] for index, row in enumerate(rows)}
     relevant_docs = {str(index): {str(index)} for index in range(len(rows))}
