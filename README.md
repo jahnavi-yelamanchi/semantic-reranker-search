@@ -139,9 +139,9 @@ The benchmark script writes rows consumed by both the API and UI:
 
 | Model | Recall@5 | P95 latency | Size |
 | --- | ---: | ---: | ---: |
-| BM25 | 0.200 | 0.53 ms | - |
-| Base embedding model | 0.210 | 5.77 ms | - |
-| Fine-tuned INT8 reranker | 0.230 | 1.86 ms | < 0.01 MB |
+| BM25 | 0.200 | 0.66 ms | - |
+| Base embedding model | 0.210 | 4.18 ms | - |
+| Fine-tuned INT8 reranker | 0.230 | 1.85 ms | < 0.01 MB |
 
 These are baseline numbers from `artifacts/metrics.json` after running the fast local lightweight training path.
 

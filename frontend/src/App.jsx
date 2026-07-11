@@ -8,8 +8,14 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 const MODES = [
   { id: "bm25", label: "BM25" },
   { id: "base", label: "Base model" },
-  { id: "finetuned", label: "ONNX INT8" },
+  { id: "finetuned", label: "Trained INT8" },
 ];
+
+function formatSize(sizeMb) {
+  if (sizeMb == null) return "-";
+  if (sizeMb > 0 && sizeMb < 0.01) return "<0.01 MB";
+  return `${sizeMb} MB`;
+}
 
 function App() {
   const [title, setTitle] = useState("Benefits FAQ");
@@ -88,7 +94,7 @@ function App() {
           <div className="brand-mark"><Search size={18} /></div>
           <div>
             <h1>Reranker Search</h1>
-            <p>BM25 vs embeddings vs ONNX INT8</p>
+            <p>BM25 vs embeddings vs trained INT8</p>
           </div>
         </div>
         <div className="side-stat">
@@ -210,7 +216,7 @@ function App() {
                   <td>{row.model}</td>
                   <td>{row.recall_at_5.toFixed ? row.recall_at_5.toFixed(3) : row.recall_at_5}</td>
                   <td>{row.p95_latency_ms} ms</td>
-                  <td>{row.size_mb == null ? "-" : `${row.size_mb} MB`}</td>
+                  <td>{formatSize(row.size_mb)}</td>
                 </tr>
               ))}
             </tbody>

@@ -77,7 +77,8 @@ def artifact_size_mb(path: str) -> float | None:
     artifact = Path(path)
     if not artifact.exists():
         return None
-    return round(artifact.stat().st_size / (1024 * 1024), 2)
+    size = artifact.stat().st_size / (1024 * 1024)
+    return round(size, 4) if size < 1 else round(size, 2)
 
 
 if __name__ == "__main__":
