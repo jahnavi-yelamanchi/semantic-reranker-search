@@ -34,10 +34,10 @@ def main() -> None:
         pairs = load_pairs(pairs_path)[: args.limit]
 
     store = SearchStore()
-    relevant_by_query: dict[str, set[str]] = {}
+    eval_cases: list[tuple[str, set[str]]] = []
     for index, pair in enumerate(pairs):
         document, chunks = store.add_document(f"Example {index}", pair["positive"])
-        relevant_by_query[pair["query"]] = {chunk.id for chunk in chunks}
+        eval_cases.append((pair["query"], {chunk.id for chunk in chunks}))
         store.add_document(f"Negative {index}", pair["negative"])
 
     bm25 = BM25Retriever(store.chunks)
@@ -51,9 +51,9 @@ def main() -> None:
     ]
 
     rows = []
-    queries = list(relevant_by_query.keys())
+    queries = [query for query, _ in eval_cases]
     for name, search_fn, size_mb in methods:
-        recalls = [recall_at_k(search_fn(query), relevant_by_query[query], k=5) for query in queries]
+        recalls = [recall_at_k(search_fn(query), relevant_ids, k=5) for query, relevant_ids in eval_cases]
         rows.append(
             {
                 "model": name,
@@ -78,4 +78,3 @@ def artifact_size_mb(path: str) -> float | None:
 
 if __name__ == "__main__":
     main()
-
