@@ -50,6 +50,15 @@ function App() {
     }
   }
 
+  async function loadFile(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const body = await file.text();
+    setTitle(file.name);
+    setText(body);
+    setStatus(`Loaded ${file.name}`);
+  }
+
   async function runSearch(event) {
     event.preventDefault();
     setLoading(true);
@@ -110,6 +119,10 @@ function App() {
             <label>
               Title
               <input value={title} onChange={(event) => setTitle(event.target.value)} />
+            </label>
+            <label>
+              Upload text file
+              <input type="file" accept=".txt,.md,.csv,.json,text/*" onChange={loadFile} />
             </label>
             <label>
               Text
@@ -209,4 +222,3 @@ function App() {
 }
 
 createRoot(document.getElementById("root")).render(<App />);
-

@@ -175,6 +175,22 @@ textarea {
   outline: none;
 }
 
+input[type="file"] {
+  color: #475569;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  border: 0;
+  border-radius: 7px;
+  background: #14213d;
+  color: #ffffff;
+  padding: 8px 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
 textarea {
   min-height: 180px;
   resize: vertical;
@@ -349,4 +365,3 @@ th {
     overflow-x: auto;
   }
 }
-
