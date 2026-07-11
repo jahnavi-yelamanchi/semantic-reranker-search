@@ -1,0 +1,20 @@
+[
+  {
+    "model": "BM25",
+    "recall_at_5": 0.2,
+    "p95_latency_ms": 0.51,
+    "size_mb": null
+  },
+  {
+    "model": "Base embedding model",
+    "recall_at_5": 0.21,
+    "p95_latency_ms": 4.06,
+    "size_mb": null
+  },
+  {
+    "model": "Fine-tuned ONNX INT8",
+    "recall_at_5": 0.21,
+    "p95_latency_ms": 4.04,
+    "size_mb": null
+  }
+]
