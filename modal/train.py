@@ -15,6 +15,7 @@ image = (
         "sentence-transformers==3.0.1",
         "optimum[onnxruntime]==1.21.2",
         "onnxscript==0.1.0",
+        "onnx-ir==0.1.12",
         "onnxruntime==1.18.1",
         "scikit-learn==1.5.1",
     )
