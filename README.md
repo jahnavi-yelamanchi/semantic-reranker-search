@@ -1,13 +1,13 @@
 # Semantic Reranker Search
 
-A recruiter-facing semantic search project that compares keyword retrieval, base embedding search, and a fine-tuned ONNX INT8 model.
+A recruiter-facing semantic search project that compares keyword retrieval, base embedding search, and a trained INT8 reranker.
 
 Users can paste or upload product docs, FAQs, or job listings, then query the corpus and compare ranked results across retrieval modes.
 
 ## What This Demonstrates
 
-- **Train:** remote Sentence Transformer fine-tuning on Modal.
-- **Optimize:** ONNX export and INT8 quantization.
+- **Train:** synthetic positive/negative query-document pairs plus a fast local INT8 reranker.
+- **Optimize:** compact quantized artifact with an ONNX/Modal path documented for heavier model export.
 - **Deploy:** FastAPI, React, Docker, and Render.
 - **Evaluate:** Recall@5, P95 latency, and model size benchmarks.
 - **Integrate:** document chunking, search API, benchmark UI, and model artifact loading.
@@ -20,11 +20,11 @@ flowchart LR
   B --> C[Document chunk store]
   B --> D[BM25 retriever]
   B --> E[Base embedding retriever]
-  B --> F[ONNX INT8 reranker]
-  G[Modal training job] --> H[Fine-tuned model]
-  H --> I[ONNX export]
-  I --> J[INT8 artifact]
-  J --> F
+  B --> F[Trained INT8 reranker]
+  G[Local lightweight training] --> H[INT8 JSON artifact]
+  H --> F
+  I[Modal training job] -. stretch .-> J[ONNX INT8 artifact]
+  J -. optional .-> F
 ```
 
 ## Project Structure
@@ -77,7 +77,7 @@ make modal-train
 make modal-download
 ```
 
-By default, the API starts with example documents so the UI can search immediately. Before Modal artifacts exist, `finetuned` mode falls back to deterministic semantic search and returns an artifact status message.
+By default, the API starts with example documents so the UI can search immediately. The checked-in lightweight INT8 artifact powers `finetuned` mode without requiring Modal.
 
 ## Generate Data
 
@@ -87,7 +87,7 @@ python scripts/generate_dataset.py --count 1000 --out data/training_pairs.jsonl
 
 The generated dataset uses product-doc, FAQ, and job-listing examples with positive and negative query-document pairs.
 
-## Train On Modal
+## Train
 
 The fast local path trains a lightweight INT8 reranker artifact in seconds:
 
@@ -99,7 +99,7 @@ make benchmark
 
 This creates `artifacts/lightweight-reranker-int8.json`, which the `finetuned` API mode uses immediately.
 
-Modal remains the heavier ONNX export path.
+Modal remains the heavier remote ONNX export path.
 
 ```bash
 pip install modal
@@ -124,6 +124,7 @@ make modal-download
 Expected artifact paths:
 
 ```text
+artifacts/lightweight-reranker-int8.json
 artifacts/model-int8.onnx
 artifacts/metrics.json
 ```
@@ -167,7 +168,7 @@ The Docker image builds the React app, serves it from FastAPI, and exposes `/hea
 1. Push this repo to GitHub.
 2. Create a Render Blueprint from `render.yaml`, or create a Docker web service manually.
 3. Set the health check path to `/health`.
-4. Include `artifacts/model-int8.onnx` before deployment if you want ONNX INT8 mode available on first boot.
+4. The lightweight INT8 artifact is already included. Add `artifacts/model-int8.onnx` later if you complete the heavier ONNX export path.
 
 ## API
 
