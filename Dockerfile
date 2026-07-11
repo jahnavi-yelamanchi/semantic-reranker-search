@@ -1,7 +1,8 @@
 FROM node:20-slim AS frontend
 WORKDIR /app/frontend
 COPY frontend/package.json ./
-RUN npm install
+COPY frontend/package-lock.json ./
+RUN npm ci
 COPY frontend ./
 RUN npm run build
 
