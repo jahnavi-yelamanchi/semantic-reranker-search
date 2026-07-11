@@ -71,6 +71,7 @@ make api
 make frontend
 make test
 make data
+make train-lightweight
 make benchmark
 make modal-train
 make modal-download
@@ -88,7 +89,17 @@ The generated dataset uses product-doc, FAQ, and job-listing examples with posit
 
 ## Train On Modal
 
-Training is intentionally remote-only.
+The fast local path trains a lightweight INT8 reranker artifact in seconds:
+
+```bash
+make data
+make train-lightweight
+make benchmark
+```
+
+This creates `artifacts/lightweight-reranker-int8.json`, which the `finetuned` API mode uses immediately.
+
+Modal remains the heavier ONNX export path.
 
 ```bash
 pip install modal

@@ -1,4 +1,4 @@
-.PHONY: api frontend test smoke data benchmark modal-train modal-download docker-build
+.PHONY: api frontend test smoke data train-lightweight benchmark modal-train modal-download docker-build
 
 api:
 	uvicorn app.main:app --app-dir backend --reload
@@ -14,6 +14,9 @@ smoke:
 
 data:
 	python scripts/generate_dataset.py --count 1000 --out data/training_pairs.jsonl
+
+train-lightweight:
+	python scripts/train_lightweight.py --pairs data/training_pairs.jsonl --out artifacts/lightweight-reranker-int8.json
 
 benchmark:
 	python scripts/evaluate.py --pairs data/training_pairs.jsonl --out artifacts/metrics.json --limit 100

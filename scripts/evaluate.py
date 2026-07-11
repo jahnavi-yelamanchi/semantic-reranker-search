@@ -47,7 +47,11 @@ def main() -> None:
     methods = [
         ("BM25", lambda query: bm25.search(query, top_k=5), None),
         ("Base embedding model", lambda query: base.search(query, store.chunks, top_k=5), None),
-        ("Fine-tuned ONNX INT8", lambda query: finetuned.search(query, store.chunks, top_k=5), artifact_size_mb("artifacts/model-int8.onnx")),
+        (
+            "Fine-tuned INT8 reranker",
+            lambda query: finetuned.search(query, store.chunks, top_k=5),
+            artifact_size_mb("artifacts/model-int8.onnx") or artifact_size_mb("artifacts/lightweight-reranker-int8.json"),
+        ),
     ]
 
     rows = []

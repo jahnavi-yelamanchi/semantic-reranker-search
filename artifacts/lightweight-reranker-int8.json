@@ -1,0 +1,18 @@
+{
+  "artifact_type": "lightweight-reranker-int8",
+  "description": "INT8 term-weight reranker trained from synthetic positive/negative query-document pairs.",
+  "training_examples": 1000,
+  "weights": {
+    "billing": 127,
+    "data": 123,
+    "engineer": 47,
+    "for": -4,
+    "frontend": 119,
+    "ml": 124,
+    "password": 124,
+    "permissions": 122,
+    "sso": 121,
+    "support": 125,
+    "the": 5
+  }
+}
