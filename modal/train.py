@@ -11,6 +11,7 @@ image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install(
         "datasets==2.20.0",
+        "accelerate==0.33.0",
         "sentence-transformers==3.0.1",
         "optimum[onnxruntime]==1.21.2",
         "onnxruntime==1.18.1",
