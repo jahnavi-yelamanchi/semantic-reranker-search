@@ -144,13 +144,15 @@ def export_onnx(sentence_model, onnx_path: Path, int8_path: Path, tokenizer_dir:
         for name in input_names
     }
     dynamic_axes["last_hidden_state"] = {0: "batch_size", 1: "sequence_length"}
+    wrapper = FeatureExtractionWrapper(auto_model).eval()
     torch.onnx.export(
-        FeatureExtractionWrapper(auto_model),
+        wrapper,
         tuple(dummy[name] for name in input_names),
         str(onnx_path),
         input_names=input_names,
         output_names=["last_hidden_state"],
         dynamic_axes=dynamic_axes,
         opset_version=14,
+        dynamo=False,
     )
     quantize_dynamic(str(onnx_path), str(int8_path), weight_type=QuantType.QInt8)
