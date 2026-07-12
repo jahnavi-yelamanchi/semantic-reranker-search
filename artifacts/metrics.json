@@ -2,19 +2,19 @@
   {
     "model": "BM25",
     "recall_at_5": 0.2,
-    "p95_latency_ms": 0.66,
+    "p95_latency_ms": 0.49,
     "size_mb": null
   },
   {
     "model": "Base embedding model",
     "recall_at_5": 0.21,
-    "p95_latency_ms": 4.18,
+    "p95_latency_ms": 4.09,
     "size_mb": null
   },
   {
     "model": "Fine-tuned INT8 reranker",
-    "recall_at_5": 0.23,
-    "p95_latency_ms": 1.85,
-    "size_mb": 0.0004
+    "recall_at_5": 0.24,
+    "p95_latency_ms": 5.35,
+    "size_mb": 0.0029
   }
 ]

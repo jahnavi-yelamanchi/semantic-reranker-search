@@ -6,8 +6,8 @@ Users can paste or upload product docs, FAQs, or job listings, then query the co
 
 ## What This Demonstrates
 
-- **Train:** synthetic positive/negative query-document pairs plus a fast local INT8 reranker.
-- **Optimize:** compact quantized artifact with an ONNX/Modal path documented for heavier model export.
+- **Train:** synthetic positive/negative query-document pairs plus a pairwise logistic reranker.
+- **Optimize:** INT8-quantized trained weights with an ONNX/Modal path documented for heavier model export.
 - **Deploy:** FastAPI, React, Docker, and Render.
 - **Evaluate:** Recall@5, P95 latency, and model size benchmarks.
 - **Integrate:** document chunking, search API, benchmark UI, and model artifact loading.
@@ -91,7 +91,7 @@ The generated dataset uses product-doc, FAQ, and job-listing examples with posit
 
 ## Train
 
-The fast local path trains a lightweight INT8 reranker artifact in seconds:
+The fast local path trains a pairwise logistic reranker and quantizes its weights to INT8 in seconds:
 
 ```bash
 make data
@@ -99,7 +99,7 @@ make train-lightweight
 make benchmark
 ```
 
-This creates `artifacts/lightweight-reranker-int8.json`, which the `finetuned` API mode uses immediately.
+This creates `artifacts/lightweight-reranker-int8.json`, which the `finetuned` API mode uses immediately. The artifact stores 384 INT8 weights, a quantization scale, and a bias term trained from positive/negative query-document pairs.
 
 Modal remains the heavier remote ONNX export path.
 
@@ -142,9 +142,9 @@ The benchmark script writes rows consumed by both the API and UI:
 
 | Model | Recall@5 | P95 latency | Size |
 | --- | ---: | ---: | ---: |
-| BM25 | 0.200 | 0.66 ms | - |
-| Base embedding model | 0.210 | 4.18 ms | - |
-| Fine-tuned INT8 reranker | 0.230 | 1.85 ms | < 0.01 MB |
+| BM25 | 0.200 | 0.49 ms | - |
+| Base embedding model | 0.210 | 4.09 ms | - |
+| Fine-tuned INT8 reranker | 0.240 | 5.35 ms | < 0.01 MB |
 
 These are baseline numbers from `artifacts/metrics.json` after running the fast local lightweight training path.
 

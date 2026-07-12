@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 from app.metrics import benchmark_latency, recall_at_k
 from app.retrieval import BM25Retriever, EmbeddingRetriever
-from app.reranker import OnnxInt8Reranker
+from app.reranker import TrainedInt8Reranker
 from app.store import SearchStore
 
 
@@ -42,7 +42,7 @@ def main() -> None:
 
     bm25 = BM25Retriever(store.chunks)
     base = EmbeddingRetriever()
-    finetuned = OnnxInt8Reranker()
+    finetuned = TrainedInt8Reranker()
 
     methods = [
         ("BM25", lambda query: bm25.search(query, top_k=5), None),

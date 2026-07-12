@@ -4,9 +4,19 @@ from app.reranker import TrainedInt8Reranker
 from app.store import SearchStore
 
 
-def test_lightweight_reranker_uses_int8_weights(tmp_path):
+def test_trained_reranker_uses_pairwise_int8_artifact(tmp_path):
     artifact = tmp_path / "lightweight-reranker-int8.json"
-    artifact.write_text(json.dumps({"weights": {"stipend": 127}}))
+    artifact.write_text(
+        json.dumps(
+            {
+                "artifact_type": "pairwise-logistic-reranker-int8",
+                "dims": 384,
+                "scale": 1.0,
+                "bias": 0.0,
+                "weights_int8": [127] * 384,
+            }
+        )
+    )
 
     store = SearchStore()
     target, _ = store.add_document("Benefits", "Remote workers receive a workspace stipend.")
