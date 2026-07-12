@@ -51,10 +51,11 @@ def train_and_export(max_examples: int = 1000, epochs: int = 1) -> dict[str, str
     metrics = evaluate_model(model, rows[: min(200, len(rows))])
     (Path("/artifacts") / "modal_metrics.json").write_text(json.dumps(metrics, indent=2))
 
-    export_onnx(output_dir, Path("/artifacts/model.onnx"), Path("/artifacts/model-int8.onnx"))
+    export_onnx(output_dir, Path("/artifacts/model.onnx"), Path("/artifacts/model-int8.onnx"), Path("/artifacts/tokenizer"))
     volume.commit()
     return {
         "model_dir": "/artifacts/model",
+        "tokenizer": "/artifacts/tokenizer",
         "onnx": "/artifacts/model.onnx",
         "int8": "/artifacts/model-int8.onnx",
         "metrics": "/artifacts/modal_metrics.json",
@@ -101,16 +102,19 @@ def evaluate_model(model, rows: list[dict[str, str]]) -> dict[str, float]:
     return {key: float(value) for key, value in scores.items() if isinstance(value, (float, int))}
 
 
-def export_onnx(model_dir: Path, onnx_path: Path, int8_path: Path) -> None:
+def export_onnx(model_dir: Path, onnx_path: Path, int8_path: Path, tokenizer_dir: Path) -> None:
     from optimum.onnxruntime import ORTModelForFeatureExtraction
     from onnxruntime.quantization import QuantType, quantize_dynamic
     from transformers import AutoTokenizer
 
-    tokenizer = AutoTokenizer.from_pretrained(model_dir)
-    ort_model = ORTModelForFeatureExtraction.from_pretrained(model_dir, export=True)
+    transformer_dir = model_dir / "0_Transformer"
+    tokenizer = AutoTokenizer.from_pretrained(transformer_dir)
+    ort_model = ORTModelForFeatureExtraction.from_pretrained(transformer_dir, export=True)
     export_dir = onnx_path.parent / "onnx_export"
     export_dir.mkdir(parents=True, exist_ok=True)
     tokenizer.save_pretrained(export_dir)
+    tokenizer_dir.mkdir(parents=True, exist_ok=True)
+    tokenizer.save_pretrained(tokenizer_dir)
     ort_model.save_pretrained(export_dir)
 
     exported = export_dir / "model.onnx"

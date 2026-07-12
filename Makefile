@@ -27,6 +27,7 @@ modal-train:
 modal-download:
 	mkdir -p artifacts
 	modal volume get semantic-reranker-artifacts /model-int8.onnx artifacts/model-int8.onnx
+	modal volume get semantic-reranker-artifacts /tokenizer artifacts/tokenizer
 	modal volume get semantic-reranker-artifacts /modal_metrics.json artifacts/modal_metrics.json
 
 docker-build:

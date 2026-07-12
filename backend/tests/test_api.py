@@ -36,5 +36,5 @@ def test_artifacts_shape():
     response = client.get("/artifacts")
     assert response.status_code == 200
     payload = response.json()
-    assert {row["name"] for row in payload} == {"lightweight-int8", "onnx-int8"}
+    assert {row["name"] for row in payload} == {"lightweight-int8", "onnx-int8", "onnx-tokenizer"}
     assert {"name", "path", "present", "size_mb"} <= set(payload[0])

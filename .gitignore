@@ -9,7 +9,6 @@ frontend/dist/
 backend/frontend_dist/
 artifacts/model/
 artifacts/onnx_export/
-artifacts/*.onnx
+artifacts/model.onnx
 data/*.jsonl
 .env
-

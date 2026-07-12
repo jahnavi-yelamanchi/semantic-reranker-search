@@ -75,15 +75,20 @@ def metrics() -> list[BenchmarkRow]:
 @app.get("/artifacts", response_model=list[ArtifactStatus])
 def artifacts() -> list[ArtifactStatus]:
     return [
-        artifact_status("lightweight-int8", trained_reranker.lightweight_path),
         artifact_status("onnx-int8", trained_reranker.artifact_path),
+        artifact_status("onnx-tokenizer", trained_reranker.tokenizer_path),
+        artifact_status("lightweight-int8", trained_reranker.lightweight_path),
     ]
 
 
 def artifact_status(name: str, path: Path) -> ArtifactStatus:
     if not path.exists():
         return ArtifactStatus(name=name, path=str(path), present=False, size_mb=None)
-    size = path.stat().st_size / (1024 * 1024)
+    if path.is_dir():
+        size_bytes = sum(item.stat().st_size for item in path.rglob("*") if item.is_file())
+    else:
+        size_bytes = path.stat().st_size
+    size = size_bytes / (1024 * 1024)
     return ArtifactStatus(
         name=name,
         path=str(path),
