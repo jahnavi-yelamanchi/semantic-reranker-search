@@ -42,7 +42,8 @@ class BM25Retriever:
                 idf = math.log(1 + (total_docs - self.doc_freqs[term] + 0.5) / (self.doc_freqs[term] + 0.5))
                 denom = tf[term] + self.k1 * (1 - self.b + self.b * doc_len / max(self.avgdl, 1e-9))
                 score += idf * (tf[term] * (self.k1 + 1)) / denom
-            scored.append(RankedChunk(chunk=chunk, score=float(score)))
+            if score > 0:
+                scored.append(RankedChunk(chunk=chunk, score=float(score)))
         return sorted(scored, key=lambda item: item.score, reverse=True)[:top_k]
 
 

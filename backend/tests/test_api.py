@@ -26,6 +26,12 @@ def test_document_and_search_flow():
     assert len(payload["results"]) >= 1
 
 
+def test_bm25_search_omits_zero_score_fillers():
+    search = client.post("/search", json={"query": "zzzz unmatched nonsense", "mode": "bm25", "top_k": 5})
+    assert search.status_code == 200
+    assert search.json()["results"] == []
+
+
 def test_metrics_shape():
     response = client.get("/metrics")
     assert response.status_code == 200
