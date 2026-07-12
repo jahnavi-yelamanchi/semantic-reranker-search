@@ -97,7 +97,7 @@ function App() {
           <div className="brand-mark"><Search size={18} /></div>
           <div>
             <h1>Reranker Search</h1>
-            <p>BM25 vs embeddings vs trained INT8</p>
+            <p>BM25 vs embeddings vs ONNX INT8</p>
           </div>
         </div>
         <div className="side-stat">

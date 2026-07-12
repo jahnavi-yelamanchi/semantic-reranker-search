@@ -1,16 +1,17 @@
 # Semantic Reranker Search
 
-A recruiter-facing semantic search project that compares keyword retrieval, base embedding search, and a Modal-trained ONNX INT8 reranker.
+A semantic search application for comparing keyword retrieval, embedding search, and an ONNX INT8 reranker.
 
 Users can paste or upload product docs, FAQs, or job listings, then query the corpus and compare ranked results across retrieval modes.
 
-## What This Demonstrates
+## Features
 
-- **Train:** synthetic positive/negative query-document pairs with Sentence Transformers on Modal.
-- **Optimize:** ONNX export plus INT8 dynamic quantization for the trained encoder.
-- **Deploy:** FastAPI, React, Docker, and Render.
-- **Evaluate:** Recall@5, P95 latency, and model size benchmarks.
-- **Integrate:** document chunking, search API, benchmark UI, and model artifact loading.
+- Document chunking and in-memory indexing
+- BM25 keyword search
+- Embedding-based retrieval
+- ONNX Runtime reranking with an INT8 quantized encoder
+- Benchmark reporting for Recall@5, P95 latency, and artifact size
+- FastAPI service with a React dashboard
 
 ## Architecture
 
@@ -105,8 +106,8 @@ make benchmark
 
 The Modal job:
 
-1. builds synthetic query-document pairs,
-2. fine-tunes `sentence-transformers/all-MiniLM-L6-v2`,
+1. builds query-document training pairs,
+2. trains `sentence-transformers/all-MiniLM-L6-v2`,
 3. saves model artifacts to a Modal Volume,
 4. exports the trained encoder to ONNX,
 5. writes `model-int8.onnx` with dynamic INT8 quantization,
@@ -143,7 +144,7 @@ The benchmark script writes rows consumed by both the API and UI:
 | Base embedding model | 0.340 | 531.98 ms | - |
 | Fine-tuned ONNX INT8 reranker | 0.270 | 8.26 ms | 21.89 MB |
 
-These are measured numbers from `artifacts/metrics.json` after Modal training, ONNX export, INT8 quantization, and local benchmarking. The ONNX model is substantially faster than the local base Sentence Transformer path in this environment; the quick synthetic fine-tune is included as a transparent one-day training run rather than hand-tuned leaderboard result.
+These are measured numbers from `artifacts/metrics.json` after Modal training, ONNX export, INT8 quantization, and local benchmarking.
 
 ## Test
 
@@ -203,7 +204,3 @@ Returns model artifact availability and sizes for the ONNX INT8 model, tokenizer
 ### `GET /health`
 
 Render health check endpoint.
-
-## Current Scope
-
-This is a one-day MVP. It intentionally skips authentication, payments, teams, persistent multi-user storage, and complex ingestion pipelines.
