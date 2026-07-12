@@ -8,7 +8,7 @@ const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 const MODES = [
   { id: "bm25", label: "BM25" },
   { id: "base", label: "Base model" },
-  { id: "finetuned", label: "Trained INT8" },
+  { id: "finetuned", label: "ONNX INT8" },
 ];
 
 function formatSize(sizeMb) {

@@ -15,14 +15,17 @@ class TrainedInt8Reranker:
         artifact_path: str = "artifacts/model-int8.onnx",
         tokenizer_path: str = "artifacts/tokenizer",
         lightweight_path: str = "artifacts/lightweight-reranker-int8.json",
+        candidate_pool: int = 25,
     ):
         self.artifact_path = Path(artifact_path)
         self.tokenizer_path = Path(tokenizer_path)
         self.lightweight_path = Path(lightweight_path)
+        self.candidate_pool = candidate_pool
         self._session = None
         self._tokenizer = None
         self._fallback = EmbeddingRetriever()
         self._artifact: dict[str, object] | None = None
+        self._onnx_embedding_cache: dict[str, np.ndarray] = {}
 
     @property
     def status(self) -> str:
@@ -69,7 +72,7 @@ class TrainedInt8Reranker:
     def search(self, query: str, chunks: list[Chunk], top_k: int = 5) -> list[RankedChunk]:
         self._load_session()
         if self._session is not None and self._tokenizer is not None:
-            bm25_results = BM25Retriever(chunks).search(query, top_k=len(chunks))
+            bm25_results = BM25Retriever(chunks).search(query, top_k=min(len(chunks), max(top_k, self.candidate_pool)))
             return self._rerank_with_onnx(query, bm25_results)[:top_k]
 
         artifact = self._load_lightweight()
@@ -102,7 +105,15 @@ class TrainedInt8Reranker:
         if not candidates:
             return []
         query_vec = self._encode_onnx([query])[0]
-        document_vecs = self._encode_onnx([candidate.chunk.text for candidate in candidates])
+        missing_texts = [
+            candidate.chunk.text
+            for candidate in candidates
+            if candidate.chunk.text not in self._onnx_embedding_cache
+        ]
+        if missing_texts:
+            for text, embedding in zip(missing_texts, self._encode_onnx(missing_texts)):
+                self._onnx_embedding_cache[text] = embedding
+        document_vecs = np.vstack([self._onnx_embedding_cache[candidate.chunk.text] for candidate in candidates])
         scores = document_vecs @ query_vec
         reranked = [
             RankedChunk(chunk=candidate.chunk, score=float(candidate.score + scores[index]))

@@ -1,13 +1,13 @@
 # Semantic Reranker Search
 
-A recruiter-facing semantic search project that compares keyword retrieval, base embedding search, and a trained INT8 reranker.
+A recruiter-facing semantic search project that compares keyword retrieval, base embedding search, and a Modal-trained ONNX INT8 reranker.
 
 Users can paste or upload product docs, FAQs, or job listings, then query the corpus and compare ranked results across retrieval modes.
 
 ## What This Demonstrates
 
-- **Train:** synthetic positive/negative query-document pairs plus a pairwise logistic reranker.
-- **Optimize:** INT8-quantized trained weights with an ONNX/Modal path documented for heavier model export.
+- **Train:** synthetic positive/negative query-document pairs with Sentence Transformers on Modal.
+- **Optimize:** ONNX export plus INT8 dynamic quantization for the trained encoder.
 - **Deploy:** FastAPI, React, Docker, and Render.
 - **Evaluate:** Recall@5, P95 latency, and model size benchmarks.
 - **Integrate:** document chunking, search API, benchmark UI, and model artifact loading.
@@ -20,11 +20,12 @@ flowchart LR
   B --> C[Document chunk store]
   B --> D[BM25 retriever]
   B --> E[Base embedding retriever]
-  B --> F[Trained INT8 reranker]
-  G[Local lightweight training] --> H[INT8 JSON artifact]
-  H --> F
-  I[Modal training job] -. stretch .-> J[ONNX INT8 artifact]
-  J -. optional .-> F
+  B --> F[Fine-tuned ONNX INT8 reranker]
+  G[Modal training job] --> H[Sentence Transformer]
+  H --> I[ONNX export]
+  I --> J[INT8 quantized model]
+  J --> F
+  K[Local lightweight fallback] -. dev fallback .-> F
 ```
 
 ## Project Structure
@@ -79,7 +80,7 @@ make modal-train
 make modal-download
 ```
 
-By default, the API starts with example documents so the UI can search immediately. The checked-in lightweight INT8 artifact powers `finetuned` mode without requiring Modal.
+By default, the API starts with example documents so the UI can search immediately. The checked-in ONNX INT8 model and tokenizer power `finetuned` mode.
 
 ## Generate Data
 
@@ -91,22 +92,15 @@ The generated dataset uses product-doc, FAQ, and job-listing examples with posit
 
 ## Train
 
-The fast local path trains a pairwise logistic reranker and quantizes its weights to INT8 in seconds:
+The full training path runs on Modal:
 
 ```bash
 make data
-make train-lightweight
-make benchmark
-```
-
-This creates `artifacts/lightweight-reranker-int8.json`, which the `finetuned` API mode uses immediately. The artifact stores 384 INT8 weights, a quantization scale, and a bias term trained from positive/negative query-document pairs.
-
-Modal remains the heavier remote ONNX export path.
-
-```bash
 pip install modal
 modal setup
 make modal-train
+make modal-download
+make benchmark
 ```
 
 The Modal job:
@@ -114,21 +108,24 @@ The Modal job:
 1. builds synthetic query-document pairs,
 2. fine-tunes `sentence-transformers/all-MiniLM-L6-v2`,
 3. saves model artifacts to a Modal Volume,
-4. exports ONNX,
-5. writes `model-int8.onnx` with dynamic INT8 quantization.
+4. exports the trained encoder to ONNX,
+5. writes `model-int8.onnx` with dynamic INT8 quantization,
+6. saves tokenizer files required by ONNX Runtime serving.
 
-Download artifacts from the Modal Volume into `artifacts/` before benchmarking or deployment:
+There is also a fast local fallback trainer for development:
 
 ```bash
-make modal-download
+make train-lightweight
 ```
 
 Expected artifact paths:
 
 ```text
-artifacts/lightweight-reranker-int8.json
 artifacts/model-int8.onnx
+artifacts/tokenizer/
 artifacts/metrics.json
+artifacts/modal_metrics.json
+artifacts/lightweight-reranker-int8.json  # fallback only
 ```
 
 ## Benchmark
@@ -143,10 +140,10 @@ The benchmark script writes rows consumed by both the API and UI:
 | Model | Recall@5 | P95 latency | Size |
 | --- | ---: | ---: | ---: |
 | BM25 | 0.200 | 0.49 ms | - |
-| Base embedding model | 0.210 | 4.09 ms | - |
-| Fine-tuned INT8 reranker | 0.240 | 5.35 ms | < 0.01 MB |
+| Base embedding model | 0.340 | 531.98 ms | - |
+| Fine-tuned ONNX INT8 reranker | 0.270 | 8.26 ms | 21.89 MB |
 
-These are baseline numbers from `artifacts/metrics.json` after running the fast local lightweight training path.
+These are measured numbers from `artifacts/metrics.json` after Modal training, ONNX export, INT8 quantization, and local benchmarking. The ONNX model is substantially faster than the local base Sentence Transformer path in this environment; the quick synthetic fine-tune is included as a transparent one-day training run rather than hand-tuned leaderboard result.
 
 ## Test
 
@@ -170,7 +167,7 @@ The Docker image builds the React app, serves it from FastAPI, and exposes `/hea
 1. Push this repo to GitHub.
 2. Create a Render Blueprint from `render.yaml`, or create a Docker web service manually.
 3. Set the health check path to `/health`.
-4. The lightweight INT8 artifact is already included. Add `artifacts/model-int8.onnx` later if you complete the heavier ONNX export path.
+4. The ONNX INT8 model and tokenizer are included in `artifacts/` for deployment.
 
 ## API
 
@@ -201,7 +198,7 @@ Returns benchmark rows for the UI and README table.
 
 ### `GET /artifacts`
 
-Returns model artifact availability and sizes for the lightweight INT8 and optional ONNX INT8 artifacts.
+Returns model artifact availability and sizes for the ONNX INT8 model, tokenizer, and local fallback artifact.
 
 ### `GET /health`
 

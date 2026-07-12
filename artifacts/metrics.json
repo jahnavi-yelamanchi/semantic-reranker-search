@@ -7,14 +7,14 @@
   },
   {
     "model": "Base embedding model",
-    "recall_at_5": 0.21,
-    "p95_latency_ms": 4.09,
+    "recall_at_5": 0.34,
+    "p95_latency_ms": 531.98,
     "size_mb": null
   },
   {
-    "model": "Fine-tuned INT8 reranker",
-    "recall_at_5": 0.24,
-    "p95_latency_ms": 5.35,
-    "size_mb": 0.0029
+    "model": "Fine-tuned ONNX INT8 reranker",
+    "recall_at_5": 0.27,
+    "p95_latency_ms": 8.26,
+    "size_mb": 21.89
   }
 ]
