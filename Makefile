@@ -22,12 +22,16 @@ benchmark:
 	python scripts/evaluate.py --pairs data/training_pairs.jsonl --out artifacts/metrics.json --limit 100
 
 modal-train:
-	modal run modal/train.py --max-examples 1000 --epochs 1
+	modal run modal/train.py --max-examples 2000 --epochs 2
 
 modal-download:
 	mkdir -p artifacts
 	modal volume get semantic-reranker-artifacts /model-int8.onnx artifacts/model-int8.onnx
-	modal volume get semantic-reranker-artifacts /tokenizer artifacts/tokenizer
+	mkdir -p artifacts/tokenizer
+	modal volume get semantic-reranker-artifacts /tokenizer/vocab.txt artifacts/tokenizer/vocab.txt
+	modal volume get semantic-reranker-artifacts /tokenizer/tokenizer_config.json artifacts/tokenizer/tokenizer_config.json
+	modal volume get semantic-reranker-artifacts /tokenizer/tokenizer.json artifacts/tokenizer/tokenizer.json
+	modal volume get semantic-reranker-artifacts /tokenizer/special_tokens_map.json artifacts/tokenizer/special_tokens_map.json
 	modal volume get semantic-reranker-artifacts /modal_metrics.json artifacts/modal_metrics.json
 
 docker-build:

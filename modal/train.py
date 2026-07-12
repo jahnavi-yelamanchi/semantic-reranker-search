@@ -38,10 +38,11 @@ def train_and_export(max_examples: int = 1000, epochs: int = 1) -> dict[str, str
     for row in dataset:
         from sentence_transformers import InputExample
 
-        train_examples.append(InputExample(texts=[row["query"], row["positive"], row["negative"]]))
+        train_examples.append(InputExample(texts=[row["query"], row["positive"]], label=1.0))
+        train_examples.append(InputExample(texts=[row["query"], row["negative"]], label=0.0))
 
-    dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
-    loss = losses.TripletLoss(model)
+    dataloader = DataLoader(train_examples, shuffle=True, batch_size=32)
+    loss = losses.CosineSimilarityLoss(model)
     model.fit(train_objectives=[(dataloader, loss)], epochs=epochs, warmup_steps=20, show_progress_bar=True)
 
     output_dir = Path("/artifacts/model")
@@ -69,21 +70,39 @@ def main(max_examples: int = 1000, epochs: int = 1) -> None:
 
 
 def build_synthetic_pairs(count: int) -> list[dict[str, str]]:
+    import random
+
     topics = [
-        ("backup", "CloudSync backs up files every 15 minutes and keeps deleted files for 30 days."),
-        ("sso", "Enterprise admins can enable SAML SSO, audit logs, and role-based access controls."),
-        ("billing", "Invoices are available from the billing settings page after each renewal."),
-        ("refunds", "Refund requests are accepted within 14 days when usage is below the plan limit."),
-        ("ml engineer", "The ML engineer role requires Python, retrieval systems, FastAPI, and model evaluation."),
-        ("frontend", "The frontend engineer role requires React, TypeScript, accessibility, and design systems."),
+        ("product_docs", "backup", "CloudSync backs up files every 15 minutes and keeps deleted files for 30 days."),
+        ("product_docs", "sso", "Enterprise admins can enable SAML SSO, audit logs, and role-based access controls."),
+        ("product_docs", "billing", "Invoices are available from the billing settings page after each renewal."),
+        ("product_docs", "permissions", "Workspace owners can grant viewer, editor, or admin permissions to teammates."),
+        ("faqs", "refunds", "Refund requests are accepted within 14 days when usage is below the plan limit."),
+        ("faqs", "password", "Users can reset a password from the sign-in page using a verified email address."),
+        ("faqs", "uploads", "PDF, TXT, and Markdown files can be uploaded from the knowledge base screen."),
+        ("faqs", "support", "Premium plans include priority email support with a four-hour response target."),
+        ("jobs", "ml engineer", "The ML engineer role requires Python, retrieval systems, FastAPI, and model evaluation."),
+        ("jobs", "frontend", "The frontend engineer role requires React, TypeScript, accessibility, and design systems."),
+        ("jobs", "data", "The data analyst role requires SQL, dashboards, experimentation, and stakeholder communication."),
+        ("jobs", "devops", "The platform engineer role requires Docker, observability, CI/CD, and cloud deployment."),
     ]
+    query_templates = [
+        "How do I find information about {topic}?",
+        "Which document explains {topic}?",
+        "What does the company say about {topic}?",
+        "Show me details for {topic}.",
+    ]
+    random.seed(7)
     rows = []
     for index in range(count):
-        topic, positive = topics[index % len(topics)]
-        _, negative = topics[(index + 2) % len(topics)]
+        domain, topic, positive = random.choice(topics)
+        negative_pool = [item for item in topics if item[1] != topic]
+        _, _, negative = random.choice(negative_pool)
+        query = random.choice(query_templates).format(topic=topic)
         rows.append(
             {
-                "query": f"Which document has information about {topic}?",
+                "domain": domain,
+                "query": query,
                 "positive": positive,
                 "negative": negative,
             }
