@@ -103,9 +103,9 @@ def evaluate_model(model, rows: list[dict[str, str]]) -> dict[str, float]:
 
 
 def export_onnx(sentence_model, onnx_path: Path, int8_path: Path, tokenizer_dir: Path) -> None:
-    from optimum.onnxruntime import ORTModelForFeatureExtraction
     from onnxruntime.quantization import QuantType, quantize_dynamic
     from transformers import AutoTokenizer
+    import torch
 
     transformer = sentence_model._first_module()
     hf_model_dir = onnx_path.parent / "hf_model"
@@ -114,14 +114,43 @@ def export_onnx(sentence_model, onnx_path: Path, int8_path: Path, tokenizer_dir:
     transformer.tokenizer.save_pretrained(hf_model_dir)
 
     tokenizer = AutoTokenizer.from_pretrained(str(hf_model_dir))
-    ort_model = ORTModelForFeatureExtraction.from_pretrained(str(hf_model_dir), export=True)
     export_dir = onnx_path.parent / "onnx_export"
     export_dir.mkdir(parents=True, exist_ok=True)
     tokenizer.save_pretrained(export_dir)
     tokenizer_dir.mkdir(parents=True, exist_ok=True)
     tokenizer.save_pretrained(tokenizer_dir)
-    ort_model.save_pretrained(export_dir)
 
-    exported = export_dir / "model.onnx"
-    exported.replace(onnx_path)
+    auto_model = transformer.auto_model.eval().cpu()
+    dummy = tokenizer(
+        ["Which document has information about billing?"],
+        padding=True,
+        truncation=True,
+        max_length=128,
+        return_tensors="pt",
+    )
+    input_names = [name for name in ["input_ids", "attention_mask", "token_type_ids"] if name in dummy]
+
+    class FeatureExtractionWrapper(torch.nn.Module):
+        def __init__(self, wrapped_model):
+            super().__init__()
+            self.wrapped_model = wrapped_model
+
+        def forward(self, *inputs):
+            kwargs = dict(zip(input_names, inputs))
+            return self.wrapped_model(**kwargs).last_hidden_state
+
+    dynamic_axes = {
+        name: {0: "batch_size", 1: "sequence_length"}
+        for name in input_names
+    }
+    dynamic_axes["last_hidden_state"] = {0: "batch_size", 1: "sequence_length"}
+    torch.onnx.export(
+        FeatureExtractionWrapper(auto_model),
+        tuple(dummy[name] for name in input_names),
+        str(onnx_path),
+        input_names=input_names,
+        output_names=["last_hidden_state"],
+        dynamic_axes=dynamic_axes,
+        opset_version=14,
+    )
     quantize_dynamic(str(onnx_path), str(int8_path), weight_type=QuantType.QInt8)
